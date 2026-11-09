@@ -1,4 +1,5 @@
 const BASE_URL = 'https://ll.thespacedevs.com/2.2.0'
+const TABLE_LIMIT = 30
 
 async function getJson(url, signal) {
   const response = await fetch(url, { signal })
@@ -14,27 +15,41 @@ async function getJson(url, signal) {
   return response.json()
 }
 
-export async function fetchUpcomingLaunches({ limit = 30, signal } = {}) {
-  const params = new URLSearchParams({
-    net__gte: new Date().toISOString(),
-    ordering: 'net',
-    limit: String(limit),
-  })
-
+export async function fetchLaunches(filters = {}, { signal } = {}) {
+  const params = buildLaunchParams(filters)
   const data = await getJson(`${BASE_URL}/launch/?${params}`, signal)
-  return data.results.map(normalizeLaunch)
+
+  return {
+    items: (data.results ?? []).map(normalizeLaunch),
+    totalCount: data.count ?? 0,
+  }
 }
 
-export async function fetchLaunchesThisYear({ signal } = {}) {
-  const year = new Date().getFullYear()
+function buildLaunchParams({
+  search = '',
+  agency = '',
+  status = '',
+  dateFrom = '',
+  dateTo = '',
+} = {}) {
+  const now = new Date()
+  const from = dateFrom ? new Date(`${dateFrom}T00:00:00`) : now
+  const netGte = from > now ? from : now
+
   const params = new URLSearchParams({
-    net__gte: `${year}-01-01T00:00:00Z`,
-    net__lte: `${year}-12-31T23:59:59Z`,
-    limit: '1',
+    net__gte: netGte.toISOString(),
+    ordering: 'net',
+    limit: String(TABLE_LIMIT),
   })
 
-  const data = await getJson(`${BASE_URL}/launch/?${params}`, signal)
-  return data.count
+  if (search.trim()) params.set('search', search.trim())
+  if (agency) params.set('lsp__name', agency)
+  if (status) params.set('status', status)
+  if (dateTo) {
+    params.set('net__lte', new Date(`${dateTo}T23:59:59.999`).toISOString())
+  }
+
+  return params
 }
 
 function normalizeLaunch(raw) {
