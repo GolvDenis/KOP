@@ -19,5 +19,5 @@ export default function QueryState({ variant, message, onRetry }) {
     )
   }
 
-  return <p className="state">Місій не знайдено.</p>
+  return <p className="state">За цими фільтрами місій не знайдено.</p>
 }

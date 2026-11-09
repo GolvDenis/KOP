@@ -79,6 +79,69 @@ button {
   color: var(--muted);
 }
 
+/* --- filters --- */
+
+.filters__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filters__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filters__actions .btn--ghost {
+  height: 34px;
+}
+
+.filters__status {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.filters__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  color-scheme: dark;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.18);
+}
+
 /* --- KPI --- */
 
 .kpi__value {
@@ -171,6 +234,12 @@ button {
 }
 
 /* --- table --- */
+
+.table-meta {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
 
 .table-wrap {
   overflow-x: auto;

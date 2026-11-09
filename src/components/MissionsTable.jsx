@@ -26,12 +26,19 @@ function getAriaSort(columnKey, sortKey, sortDirection) {
 
 export default function MissionsTable({
   launches,
+  totalCount,
   sortKey,
   sortDirection,
   onSort,
 }) {
   return (
     <div className="table-wrap">
+      <p className="table-meta">
+        {totalCount > launches.length
+          ? `Показано ${launches.length} із ${totalCount}`
+          : `Усього: ${totalCount}`}
+      </p>
+
       <table className="missions-table">
         <thead>
           <tr>

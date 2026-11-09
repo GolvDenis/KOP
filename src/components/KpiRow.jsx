@@ -1,9 +1,12 @@
 import KpiCard from './KpiCard.jsx'
 import { formatLaunchDate, formatRelativeLaunch } from '../utils/launches.js'
 
-export default function KpiRow({ nearest, launchesThisYear, isLoading, hasError }) {
-  const year = new Date().getFullYear()
-
+export default function KpiRow({
+  nearest,
+  totalCount,
+  isLoading,
+  hasError,
+}) {
   let nearestValue = '—'
   let nearestCaption = 'Немає майбутніх запусків'
 
@@ -17,8 +20,8 @@ export default function KpiRow({ nearest, launchesThisYear, isLoading, hasError 
     nearestCaption = `${nearest.name} · ${formatLaunchDate(nearest.net)}`
   }
 
-  let countValue = launchesThisYear
-  let countCaption = `${year} · Launch Library 2`
+  let countValue = totalCount
+  let countCaption = 'За фільтром · Launch Library 2'
 
   if (isLoading) {
     countValue = '…'
@@ -36,7 +39,7 @@ export default function KpiRow({ nearest, launchesThisYear, isLoading, hasError 
         caption={nearestCaption}
       />
       <KpiCard
-        title="Запусків цьогоріч"
+        title="Майбутніх запусків"
         value={countValue}
         caption={countCaption}
       />

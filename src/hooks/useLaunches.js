@@ -1,58 +1,43 @@
-import { useEffect, useState } from 'react'
-import {
-  fetchLaunchesThisYear,
-  fetchUpcomingLaunches,
-} from '../api/launches.js'
+import { useCallback } from 'react'
+import { fetchLaunches } from '../api/launches.js'
+import { getAgencyOptions, hasActiveFilters } from '../utils/filters.js'
+import { useFetch } from './useFetch.js'
 
-export function useLaunches() {
-  const [launches, setLaunches] = useState([])
-  const [launchesThisYear, setLaunchesThisYear] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
+let cachedAgencyOptions = []
+let hasCapturedAgencyOptions = false
 
-  useEffect(() => {
-    const controller = new AbortController()
-    let active = true
+export function useLaunches(filters = {}) {
+  const queryKey = JSON.stringify(filters)
+  const fetcher = useCallback(
+    async (signal) => {
+      const result = await fetchLaunches(filters, { signal })
 
-    async function load() {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const [upcoming, yearCount] = await Promise.all([
-          fetchUpcomingLaunches({ signal: controller.signal }),
-          fetchLaunchesThisYear({ signal: controller.signal }),
-        ])
-
-        if (!active) return
-
-        setLaunches(upcoming)
-        setLaunchesThisYear(yearCount)
-      } catch (err) {
-        if (!active || err.name === 'AbortError') return
-
-        setError(
-          err.message === 'rate-limit'
-            ? 'Перевищено ліміт запитів до API. Спробуйте пізніше.'
-            : 'Не вдалося завантажити дані. Перевірте з’єднання.',
-        )
-      } finally {
-        if (active) setIsLoading(false)
+      if (!hasCapturedAgencyOptions && !hasActiveFilters(filters)) {
+        cachedAgencyOptions = getAgencyOptions(result.items)
+        hasCapturedAgencyOptions = true
       }
-    }
 
-    load()
+      return result
+    },
+    [filters],
+  )
+  const { data, loading, error, refetch } = useFetch(fetcher, queryKey)
 
-    return () => {
-      active = false
-      controller.abort()
-    }
-  }, [reloadKey])
+  let errorMessage = null
 
-  function retry() {
-    setReloadKey((key) => key + 1)
+  if (error) {
+    errorMessage =
+      error.message === 'rate-limit'
+        ? 'Перевищено ліміт запитів до API. Спробуйте пізніше.'
+        : 'Не вдалося завантажити дані. Перевірте з’єднання.'
   }
 
-  return { launches, launchesThisYear, isLoading, error, retry }
+  return {
+    launches: data?.items ?? [],
+    totalCount: data?.totalCount ?? 0,
+    agencyOptions: cachedAgencyOptions,
+    loading,
+    error: errorMessage,
+    retry: refetch,
+  }
 }
